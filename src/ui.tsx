@@ -7,6 +7,7 @@ import ReactEcs, { Button, Label, ReactEcsRenderer, UiEntity } from '@dcl/sdk/re
 import { Cube } from './components'
 //import { createCube } from './factory'
 import { toggleFootsteps, updateFootsteps } from './footsteps'
+import { changeHeartColor } from './randomColor'
 
 export function setupUi() {
   ReactEcsRenderer.setUiRenderer(uiComponent)
@@ -60,13 +61,26 @@ const uiComponent = () => (
       />
       <Button
         uiTransform={{ width: 100, height: 40, margin: 8 }}
-        value='Toggle Hearts On/Off'
+        value='Toggle On/Off'
         variant='primary'
         fontSize={14}
         onMouseDown={() => {
         
          // engine.addSystem(updateFootsteps);
          toggleFootsteps()
+        
+          //  createCube(1 + Math.random() * 8, Math.random() * 8, 1 + Math.random() * 8, false)
+        }}
+      />
+        <Button
+        uiTransform={{ width: 100, height: 40, margin: 8 }}
+        value='Change Color'
+        variant='primary'
+        fontSize={14}
+        onMouseDown={() => {
+        
+         // engine.addSystem(updateFootsteps);
+         changeHeartColor()
         
           //  createCube(1 + Math.random() * 8, Math.random() * 8, 1 + Math.random() * 8, false)
         }}

@@ -14,5 +14,6 @@ export function main() {
   setupUi();
   engine.addSystem(circularSystem);
 engine.addSystem(bounceScalingSystem);
+engine.addSystem(updateFootsteps)
 
 }
