@@ -3,9 +3,19 @@
     "replaces": [],
     "hides": [],
     "tags": [
-      "special",
+      "heart",
+      "HeartPrint",
+      "shoes",
+      "footprint",
+      "footprints",
+      "footstep",
+      "footsteps",
+      "thank-you",
+      "kjstrong",
+      "lowpolymodels",
+      "smart",
       "new",
-      "eyebrows"
+      "love"
     ],
     "representations": [
       {
@@ -13,17 +23,17 @@
           "urn:decentraland:off-chain:base-avatars:BaseMale",
           "urn:decentraland:off-chain:base-avatars:BaseFemale"
         ],
-        "mainFile": "glasses.glb",
+        "mainFile": "love-sneakers.glb",
         "contents": [
-          "glasses.glb"
+          "love-sneakers.glb"
         ],
         "overrideHides": [],
         "overrideReplaces": []
       }
     ],
-    "category": "eyewear"
+    "category": "feet"
   },
-  "name": "Smart Wearable Example",
-  "description": "Put the glasses to see a new world",
-  "rarity": "mythic"
+  "name": "HeartPrint Shoes",
+  "description": "Leave heart-shaped footprints wherever you go.",
+  "rarity": "epic"
 }

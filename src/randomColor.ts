@@ -1,4 +1,4 @@
-import { Color3, Color4 } from "@dcl/sdk/math";
+import { Color4 } from "@dcl/sdk/math";
 import { Material, engine, MaterialTransparencyMode } from "@dcl/sdk/ecs";
 
 export const colors = [
@@ -28,28 +28,28 @@ export function changeHeartColor() {
     if (material) {
       Material.setPbrMaterial(entity, {
         texture: Material.Texture.Common({
-          src: 'assets/heart.png'
+          src: 'assets/heart2.png'
         }),
         emissiveTexture: Material.Texture.Common({
-          src: 'assets/heart.png'
+          src: 'assets/heart2.png'
         }),
         emissiveColor: selectedColor, // Use the selected color here
         emissiveIntensity: emission, // Use the emission value here
         roughness: 1,
         specularIntensity: 0,
         alphaTexture: Material.Texture.Common({
-          src: 'assets/heart.png'
+          src: 'assets/heart2.png'
         }),
         transparencyMode: MaterialTransparencyMode.MTM_ALPHA_TEST,
         alphaTest: 0.1
-      });;
+      });
     }
   }
 }
 
 export let selectedColor = colors[Math.floor(Math.random() * colors.length)];
 
-export const minEmission = 1.1; // Minimum emission value
-export const maxEmission = 3; // Maximum emission value
+export const minEmission = 2; // Minimum emission value
+export const maxEmission = 4; // Maximum emission value
 
 export let emission = Math.random() * (maxEmission - minEmission) + minEmission;

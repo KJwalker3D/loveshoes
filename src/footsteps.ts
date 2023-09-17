@@ -1,35 +1,19 @@
-import {
-    engine,
-    Transform,
-    Schemas,
-    AvatarAttach,
-    AvatarAnchorPointType,
-    MeshRenderer,
-    Material,
-    PBMaterial,
-    PBMaterial_PbrMaterial,
-    MaterialTransparencyMode
-  } from '@dcl/sdk/ecs'
-  import { Quaternion, Vector3 } from '@dcl/sdk/math'
-  import { BounceScaling, Spinner } from './components'
-  import { selectedColor, emission, colors } from './randomColor';
-import { bounceScalingSystem, circularSystem } from './systems';
+import { engine, Transform, MeshRenderer, Material, MaterialTransparencyMode } from '@dcl/sdk/ecs'
+import { Quaternion, Vector3 } from '@dcl/sdk/math'
+import { BounceScaling, Spinner } from './components'
+import { emission, colors } from './randomColor';
 import { MessageBus } from '@dcl/sdk/message-bus';
 
 
 
 const sceneMessageBus = new MessageBus();
-// Footstep behaviour 
 
-// Create a new system for footsteps
-//engine.addSystem(updateFootsteps)
+
 
 // Declare a variable to store the last avatar position
-let lastAvatarPosition = Vector3.create(0, 0, 0); // Initialize with a zero vector
-
-
+let lastAvatarPosition = Vector3.Zero(); // Initialize with a zero vector
 let isPlayerMoving = false;
-let footstepsShowing = true; // reset to false
+let footstepsShowing = true; // initiate on
 
 
 
@@ -37,7 +21,6 @@ let footstepsShowing = true; // reset to false
 
 export function toggleFootsteps() {
  
-
   if (!footstepsShowing) {
     engine.addSystem(updateFootsteps);
     footstepsShowing = true;
@@ -47,108 +30,112 @@ export function toggleFootsteps() {
     footstepsShowing = false;
     engine.removeSystem(updateFootsteps);
   }
-
 }
 
 // Store the last time a footprint was created
-let lastFootprintTime: number | undefined;
-let lastFootprintPosition: Vector3 | undefined;
+let lastFootprintTime: number | 0;
+let isLeftFoot = true; // Variable to track left and right alternation
 
 // Function to update the footsteps
 export function updateFootsteps() {
   // Get the avatar's position
   const avatarTransform = Transform.get(engine.PlayerEntity);
   const avatarPosition = avatarTransform.position;
+  const avatarRotation = avatarTransform.rotation;
+  const avatarRotationEuler = Quaternion.toEulerAngles(avatarRotation);
 
   // Calculate the distance traveled by the player since the last frame
   const distanceTraveled = Vector3.distance(avatarPosition, lastAvatarPosition);
 
   // Check if the player is moving
-  const isMoving = distanceTraveled > 0.05; // Adjust the threshold as needed
+  const isMoving = distanceTraveled > 0.03; // Adjust the threshold as needed
 
   // Update the last avatar position
   lastAvatarPosition.x = avatarPosition.x; // Update the X coordinate
   lastAvatarPosition.y = avatarPosition.y; // Update the Y coordinate
   lastAvatarPosition.z = avatarPosition.z; // Update the Z coordinate
 
+  // Rotation to account for left right at different rots
+  const footprintRotation = Vector3.add(avatarRotationEuler, Vector3.create( 90,
+    Math.random() * 360,
+    0));
   // Stop generating cubes when the player is still
   if (isMoving && !isPlayerMoving) {
-    //player is moving create footprincts
     isPlayerMoving = true;
-    //engine.removeEntity()
   } else if (!isMoving && isPlayerMoving) {
-    //stopped moving
     isPlayerMoving = false;
   }
 
   if (isPlayerMoving) {
 
-  //fixed distance between footprints
-  //const distanceBetweenFootprints = 1;
-  //if (Math.random() < 0.2) changing to below
-   // Check if enough time has passed since the last footprint creation
-   if (!lastFootprintTime || Date.now() - lastFootprintTime >= 100) {
+   if (!lastFootprintTime || Date.now() - lastFootprintTime >= 35) {
     // Generate a footprint
-    let positionOffset: Vector3;
-
-    // Ensure the new footprint is not too close to the previous one
-    do {
-      positionOffset = Vector3.create(
-        Math.random() * 0.7 - 0.1,
-        -0.8 + Math.random() * 0.02,
-        Math.random() * 0.7 - 0.1
-      );
-    } while (
-      lastFootprintPosition &&
-      Vector3.distance(avatarPosition, Vector3.add(avatarPosition, positionOffset)) <
-        .2 // Adjust the distance as needed
-    );
-    // Ensure the scale is the same on all axes to maintain proportions
-    const scaleValue =  0.1 + Math.random() * 0.1; // Randomize scale within a range (0.1 to 0.2)
-    const scaleOffset = Vector3.create(scaleValue, scaleValue, scaleValue);
+    lastFootprintTime++
+    
+    let forwardOffset = 0.2;
+    let positionOffset = Vector3.Zero();
   
+    if (isLeftFoot) {
+      // Calculate the position offset for the left foot based on avatar rotation
+      const leftFootRotation = avatarRotationEuler.y + 90; // Offset by 90 degrees
+      const leftFootX = avatarPosition.x + Math.cos(leftFootRotation * (Math.PI / 180)) * forwardOffset;
+      const leftFootZ = avatarPosition.z + Math.sin(leftFootRotation * (Math.PI / 180)) * forwardOffset;
+      positionOffset = Vector3.create(leftFootX, avatarPosition.y - 0.78, leftFootZ);
+    
+    } else {
+      // Calculate the position offset for the right foot based on avatar rotation
+      const rightFootRotation = avatarRotationEuler.y - 90; // Offset by -90 degrees
+      const rightFootX = avatarPosition.x + Math.cos(rightFootRotation * (Math.PI / 180)) * forwardOffset;
+      const rightFootZ = avatarPosition.z + Math.sin(rightFootRotation * (Math.PI / 180)) * forwardOffset;
+      positionOffset = Vector3.create(rightFootX, avatarPosition.y - 0.79, rightFootZ);
+     
+    }
+    
+    // Toggle between left and right for the next step
+    isLeftFoot = !isLeftFoot;
+    
     // Calculate the position for the new footprint with randomness
     const footprintPosition = Vector3.add(avatarPosition, positionOffset);
+    const footprintRotationQuat = Quaternion.fromEulerDegrees(footprintRotation.x, footprintRotation.y, footprintRotation.z)
+
+    // Determine scale
+    const scaleOffset = Vector3.create(0.5, 0.5, 0.5);
+    let selectedColor = colors[Math.floor(Math.random() * colors.length)];
 
     // Create a new footprint entity and set its position and scale
     const footprint = engine.addEntity();
-    Transform.create(footprint, {
-      position: footprintPosition,
-      scale: scaleOffset, // Apply the randomized scale
-      rotation: Quaternion.fromEulerDegrees(
-        90,
-        Math.random() * 360,
-        0
-      ), // Randomize rotation
-    });
-    MeshRenderer.setPlane(footprint);
-  
-  
-    // Create the material for the cube with the selected color and emission
-    const selectedColor = colors[Math.floor(Math.random() * colors.length)]
 
+    // Create the material for the cube with the selected color and emission
     Material.setPbrMaterial(footprint, {
       texture: Material.Texture.Common({
-        src: 'assets/heart.png'
+        src: 'assets/heart2.png'
       }),
       emissiveTexture: Material.Texture.Common({
-        src: 'assets/heart.png'
+        src: 'assets/heart2.png'
       }),
       emissiveColor: selectedColor,
       emissiveIntensity: emission,
       roughness: 1,
       specularIntensity: 0,
       alphaTexture: Material.Texture.Common({
-        src: 'assets/heart.png'
+        src: 'assets/heart2.png'
       }),
       transparencyMode: MaterialTransparencyMode.MTM_ALPHA_TEST,
       alphaTest: 0.1
-    })
+    });
+    Transform.create(footprint, {
+      position: positionOffset,
+      scale: scaleOffset,
+      rotation: footprintRotationQuat
+    });
+    MeshRenderer.setPlane(footprint);
+  
+  
     
     Spinner.create(footprint, {
       speed: 0.3
-    })
-    BounceScaling.create(footprint)
+    });
+    BounceScaling.create(footprint);
     
        // Use the Message Bus to notify other players about the new footprint
        sceneMessageBus.emit('newFootprint', {
@@ -172,52 +159,6 @@ export function updateFootsteps() {
       });
   }
 
-
-
- 
-
-
-
-
-
-
 }
 }
 
-/*
-// Handle messages from other players to create new footprints
-sceneMessageBus.on('newFootprint', (info: any) => {
-  const { position, scale, color, emission } = info;
-
-  const footprint = engine.addEntity();
-  Transform.create(footprint, {
-    position: position,
-    scale: scale,
-    rotation: Quaternion.fromEulerDegrees(90, Math.random() * 360, 0),
-  });
-  MeshRenderer.setPlane(footprint);
-
-  Material.setPbrMaterial(footprint, {
-    texture: Material.Texture.Common({
-      src: 'assets/heart.png',
-    }),
-    emissiveTexture: Material.Texture.Common({
-      src: 'assets/heart.png',
-    }),
-    emissiveColor: color,
-    emissiveIntensity: emission,
-    roughness: 1,
-    specularIntensity: 0,
-    alphaTexture: Material.Texture.Common({
-      src: 'assets/heart.png',
-    }),
-    transparencyMode: MaterialTransparencyMode.MTM_ALPHA_TEST,
-    alphaTest: 0.1,
-  });
-
-  Spinner.create(footprint, {
-    speed: 0.3,
-  });
-  BounceScaling.create(footprint);
-});
-*/

@@ -1,98 +1,103 @@
-import {
-  engine,
-  Transform,
-} from '@dcl/sdk/ecs'
-import { Color4 } from '@dcl/sdk/math'
-import ReactEcs, { Button, Label, ReactEcsRenderer, UiEntity } from '@dcl/sdk/react-ecs'
-import { Cube } from './components'
-//import { createCube } from './factory'
-import { toggleFootsteps, updateFootsteps } from './footsteps'
-import { changeHeartColor } from './randomColor'
+
+import ReactEcs, { Button, ReactEcsRenderer, UiEntity } from '@dcl/sdk/react-ecs';
+import { toggleFootsteps } from './footsteps';
+import { changeHeartColor } from './randomColor';
+import { Color4 } from '@dcl/sdk/math';
+
+
 
 export function setupUi() {
-  ReactEcsRenderer.setUiRenderer(uiComponent)
+  ReactEcsRenderer.setUiRenderer(uiComponent);
 }
+
+const heartButtonImageSrc = 'assets/heart3.png'; // Replace with the actual path
+
+
+
 
 const uiComponent = () => (
   <UiEntity
-    uiTransform={{
-      width: 400,
-      height: 230,
-      margin: '16px 0 8px 270px',
-      padding: 4,
+    uiTransform={{ 
+      positionType: 'relative',
+      width: 250,
+      height: 100,
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'flex-end',
+      position: {
+        top: '90%', 
+        right: '1%',
+        bottom: '1%', 
+        left: '80%'
+      }
     }}
-    uiBackground={{ color: Color4.create(0.5, 0.8, 0.1, 0.6) }}
   >
+
     <UiEntity
       uiTransform={{
         width: '100%',
-        height: '100%',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'space-between'
+        margin: '8px 8px 0 0', // Push to the bottom-right corner
+        flexDirection: 'row', // Stack in reverse order
+        justifyContent: 'flex-end',
+        alignItems: 'flex-end', // Align items to the right
       }}
-      uiBackground={{ color: Color4.fromHexString("#70ac76ff") }}
     >
-      <UiEntity
-        uiTransform={{
-          width: '100%',
-          height: 80,
-          margin: '8px 0'
-        }}
+      <Button
+        uiTransform={{ width: 100, height: 100, margin: '0 0 8px 0' }}
+        value="On \nOff" 
+        variant='secondary'
+        fontSize={16}
+        color={Color4.Black()}
+        onMouseDown={() => toggleFootsteps()}
         uiBackground={{
-          textureMode: 'stretch',
+          color: Color4.Teal(),
+          textureMode: 'nine-slices',
           texture: {
-            src: 'thumbnail.png',
+            src: heartButtonImageSrc,
+          },
+          textureSlices: {
+            top: -0.05,
+            bottom: -0.05,
+            left: -0.02,
+            right: -0.02,
           },
         }}
-        uiText={{ value: 'SDK7 Smart Wearable', fontSize: 18 }}
       />
-      <Label
-        onMouseDown={() => {console.log('Player Position clicked !')}}
-        value={`Player: ${getPlayerPosition()}`}
-        fontSize={18}
-        uiTransform={{ width: '100%', height: 30 } }
-      />
-      <Label
-        onMouseDown={() => {console.log('# Cubes clicked !')}}
-        value={`# Cubes: ${[...engine.getEntitiesWith(Cube)].length}`}
-        fontSize={18}
-        uiTransform={{ width: '100%', height: 30 } }
-      />
-      <Button
-        uiTransform={{ width: 100, height: 40, margin: 8 }}
-        value='Toggle On/Off'
-        variant='primary'
-        fontSize={14}
-        onMouseDown={() => {
-        
-         // engine.addSystem(updateFootsteps);
-         toggleFootsteps()
-        
-          //  createCube(1 + Math.random() * 8, Math.random() * 8, 1 + Math.random() * 8, false)
-        }}
-      />
-        <Button
-        uiTransform={{ width: 100, height: 40, margin: 8 }}
-        value='Change Color'
-        variant='primary'
-        fontSize={14}
-        onMouseDown={() => {
-        
-         // engine.addSystem(updateFootsteps);
-         changeHeartColor()
-        
-          //  createCube(1 + Math.random() * 8, Math.random() * 8, 1 + Math.random() * 8, false)
-        }}
-      />
-     </UiEntity>
-  </UiEntity>
-)
+    </UiEntity>
 
-function getPlayerPosition() {
-  const playerPosition = Transform.getOrNull(engine.PlayerEntity)
-  if (!playerPosition) return ' no data yet'
-  const { x, y, z } = playerPosition.position
-  return `{X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, z: ${z.toFixed(2)} }`
-}
+    <UiEntity
+      uiTransform={{
+        width: '100%',
+        //height: 100,
+        margin: '8px 8px 0 0',
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+      }}
+    >
+      <Button
+        uiTransform={{ width: 100, height: 100, margin: '0 0 8px 0' }}
+        value="Change \n Color"
+        variant='primary'
+        fontSize={16}
+        onMouseDown={() => changeHeartColor()}
+        uiBackground={{
+          textureMode: 'nine-slices',
+          texture: {
+            src: heartButtonImageSrc,
+          },
+          textureSlices: {
+            top: -0.05,
+            bottom: -0.05,
+            left: -0.02,
+            right: -0.02,
+          },
+        }}
+      />
+    </UiEntity>
+
+
+  </UiEntity>
+);
+
 
